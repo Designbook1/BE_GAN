@@ -1,6 +1,6 @@
 # BE_GAN
 
-My re-implementation of the BEGAN by Berthelot et al.
+My re-implementation of the BEGAN by Berthelot et al. with some modifications (for Generator, I use 10 Res blocks instead, and for Discriminator, I use 4 Res blocks instead).
 
 Example on how to use weight_decay -> 0.0005 to each layer.
 
