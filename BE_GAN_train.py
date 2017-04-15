@@ -5,7 +5,7 @@ from keras.layers import Flatten, Dense, Dropout, Reshape, Permute, Activation, 
 from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D, Deconvolution2D, UpSampling2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.core import Lambda
-from keras.layers.advanced_activations import  ELU, LeakyReLU
+from keras.layers.advanced_activations import  ELU
 from keras.optimizers import Adam
 from keras.regularizers import l2
 import numpy as np
@@ -77,210 +77,156 @@ VGGFACE.trainable = False # freeze VGGFACE to tune GN's parameters
 # Generator network definition
 def Generator_Net():
     # Input
-    inputs = Input(shape=(img_w, img_h, channels))
-    conv_0 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(inputs)
-    conv_0 = LeakyReLU(alpha=0.3)(conv_0)
-    conv_0 = BatchNormalization()(conv_0)
+    GN_inputs = Input(shape=(img_w, img_h, channels))
+    GN_conv_0 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_inputs)
+    GN_conv_0 = ELU()(GN_conv_0)
+    GN_conv_0 = BatchNormalization()(GN_conv_0)
     
     # Resnet block1
-    conv_1_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_0)
-    conv_1_1 = LeakyReLU(alpha=0.3)(conv_1_1)
-    conv_1_1 = BatchNormalization()(conv_1_1)
-    conv_1_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_1_1)
-    res_b1 = merge([conv_0, conv_1_2], mode='sum')
-    res_b1 = LeakyReLU(alpha=0.3)(res_b1)
-    res_b1 = BatchNormalization()(res_b1)
+    GN_conv_1_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_0)
+    GN_conv_1_1 = ELU()(GN_conv_1_1)
+    GN_conv_1_1 = BatchNormalization()(GN_conv_1_1)
+    GN_conv_1_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_1_1)
+    GN_res_b1 = merge([GN_conv_0, GN_conv_1_2], mode='sum')
+    GN_res_b1 = ELU()(GN_res_b1)
+    GN_res_b1 = BatchNormalization()(GN_res_b1)
 
     # Resnet block2
-    conv_2_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b1)
-    conv_2_1 = LeakyReLU(alpha=0.3)(conv_2_1)
-    conv_2_1 = BatchNormalization()(conv_2_1)
-    conv_2_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_2_1)
-    res_b2 = merge([res_b1, conv_2_2], mode='sum')
-    res_b2 = LeakyReLU(alpha=0.3)(res_b2)
-    res_b2 = BatchNormalization()(res_b2)
+    GN_conv_2_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b1)
+    GN_conv_2_1 = ELU()(GN_conv_2_1)
+    GN_conv_2_1 = BatchNormalization()(GN_conv_2_1)
+    GN_conv_2_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_2_1)
+    GN_res_b2 = merge([GN_res_b1, GN_conv_2_2], mode='sum')
+    GN_res_b2 = ELU()(GN_res_b2)
+    GN_res_b2 = BatchNormalization()(GN_res_b2)
 
     # Resnet block3
-    conv_3_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b2)
-    conv_3_1 = LeakyReLU(alpha=0.3)(conv_3_1)
-    conv_3_1 = BatchNormalization()(conv_3_1)
-    conv_3_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_3_1)
-    res_b3 = merge([res_b2, conv_3_2], mode='sum')
-    res_b3 = LeakyReLU(alpha=0.3)(res_b3)
-    res_b3 = BatchNormalization()(res_b3)
+    GN_conv_3_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b2)
+    GN_conv_3_1 = ELU()(GN_conv_3_1)
+    GN_conv_3_1 = BatchNormalization()(GN_conv_3_1)
+    GN_conv_3_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_3_1)
+    GN_res_b3 = merge([GN_res_b2, GN_conv_3_2], mode='sum')
+    GN_res_b3 = ELU()(GN_res_b3)
+    GN_res_b3 = BatchNormalization()(GN_res_b3)
 
     # Resnet block4
-    conv_4_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b3)
-    conv_4_1 = LeakyReLU(alpha=0.3)(conv_4_1)
-    conv_4_1 = BatchNormalization()(conv_4_1)
-    conv_4_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_4_1)
-    res_b4 = merge([res_b3, conv_4_2], mode='sum')
-    res_b4 = LeakyReLU(alpha=0.3)(res_b4)
-    res_b4 = BatchNormalization()(res_b4)
+    GN_conv_4_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b3)
+    GN_conv_4_1 = ELU()(GN_conv_4_1)
+    GN_conv_4_1 = BatchNormalization()(GN_conv_4_1)
+    GN_conv_4_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_4_1)
+    GN_res_b4 = merge([GN_res_b3, GN_conv_4_2], mode='sum')
+    GN_res_b4 = ELU()(GN_res_b4)
+    GN_res_b4 = BatchNormalization()(GN_res_b4)
     
     # Resnet block5
-    conv_5_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b4)
-    conv_5_1 = LeakyReLU(alpha=0.3)(conv_5_1)
-    conv_5_1 = BatchNormalization()(conv_5_1)
-    conv_5_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_5_1)
-    res_b5 = merge([res_b4, conv_5_2], mode='sum')
-    res_b5 = LeakyReLU(alpha=0.3)(res_b5)
-    res_b5 = BatchNormalization()(res_b5)
+    GN_conv_5_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b4)
+    GN_conv_5_1 = ELU()(GN_conv_5_1)
+    GN_conv_5_1 = BatchNormalization()(GN_conv_5_1)
+    GN_conv_5_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_5_1)
+    GN_res_b5 = merge([GN_res_b4, GN_conv_5_2], mode='sum')
+    GN_res_b5 = ELU()(GN_res_b5)
+    GN_res_b5 = BatchNormalization()(GN_res_b5)
     
     # Resnet block6
-    conv_6_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b5)
-    conv_6_1 = LeakyReLU(alpha=0.3)(conv_6_1)
-    conv_6_1 = BatchNormalization()(conv_6_1)
-    conv_6_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_6_1)
-    res_b6 = merge([res_b5, conv_6_2], mode='sum')
-    res_b6 = LeakyReLU(alpha=0.3)(res_b6)
-    res_b6 = BatchNormalization()(res_b6)
+    GN_conv_6_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b5)
+    GN_conv_6_1 = ELU()(GN_conv_6_1)
+    GN_conv_6_1 = BatchNormalization()(GN_conv_6_1)
+    GN_conv_6_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_6_1)
+    GN_res_b6 = merge([GN_res_b5, GN_conv_6_2], mode='sum')
+    GN_res_b6 = ELU()(GN_res_b6)
+    GN_res_b6 = BatchNormalization()(GN_res_b6)
 
     # Resnet block7
-    conv_7_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b6)
-    conv_7_1 = LeakyReLU(alpha=0.3)(conv_7_1)
-    conv_7_1 = BatchNormalization()(conv_7_1)
-    conv_7_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_7_1)
-    res_b7 = merge([res_b6, conv_7_2], mode='sum')
-    res_b7 = LeakyReLU(alpha=0.3)(res_b7)
-    res_b7 = BatchNormalization()(res_b7)
+    GN_conv_7_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b6)
+    GN_conv_7_1 = ELU()(GN_conv_7_1)
+    GN_conv_7_1 = BatchNormalization()(GN_conv_7_1)
+    GN_conv_7_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_7_1)
+    GN_res_b7 = merge([GN_res_b6, GN_conv_7_2], mode='sum')
+    GN_res_b7 = ELU()(GN_res_b7)
+    GN_res_b7 = BatchNormalization()(GN_res_b7)
 
     # Resnet block8
-    conv_8_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b7)
-    conv_8_1 = LeakyReLU(alpha=0.3)(conv_8_1)
-    conv_8_1 = BatchNormalization()(conv_8_1)
-    conv_8_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_8_1)
-    res_b8 = merge([res_b7, conv_8_2], mode='sum')
-    res_b8 = LeakyReLU(alpha=0.3)(res_b8)
-    res_b8 = BatchNormalization()(res_b8)
+    GN_conv_8_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b7)
+    GN_conv_8_1 = ELU()(GN_conv_8_1)
+    GN_conv_8_1 = BatchNormalization()(GN_conv_8_1)
+    GN_conv_8_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_8_1)
+    GN_res_b8 = merge([GN_res_b7, GN_conv_8_2], mode='sum')
+    GN_res_b8 = ELU()(GN_res_b8)
+    GN_res_b8 = BatchNormalization()(GN_res_b8)
 
     # Resnet block9
-    conv_9_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b8)
-    conv_9_1 = LeakyReLU(alpha=0.3)(conv_9_1)
-    conv_9_1 = BatchNormalization()(conv_9_1)
-    conv_9_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_9_1)
-    res_b9 = merge([res_b8, conv_9_2], mode='sum')
-    res_b9 = LeakyReLU(alpha=0.3)(res_b9)
-    res_b9 = BatchNormalization()(res_b9)
+    GN_conv_9_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b8)
+    GN_conv_9_1 = ELU()(GN_conv_9_1)
+    GN_conv_9_1 = BatchNormalization()(GN_conv_9_1)
+    GN_conv_9_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_9_1)
+    GN_res_b9 = merge([GN_res_b8, GN_conv_9_2], mode='sum')
+    GN_res_b9 = ELU()(GN_res_b9)
+    GN_res_b9 = BatchNormalization()(GN_res_b9)
 
     # Resnet block10
-    conv_10_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b9)
-    conv_10_1 = LeakyReLU(alpha=0.3)(conv_10_1)
-    conv_10_1 = BatchNormalization()(conv_10_1)
-    conv_10_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_10_1)
-    res_b10 = merge([res_b9, conv_10_2], mode='sum')
-    res_b10 = LeakyReLU(alpha=0.3)(res_b10)
-    res_b10 = BatchNormalization()(res_b10)
+    GN_conv_10_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_res_b9)
+    GN_conv_10_1 = ELU()(GN_conv_10_1)
+    GN_conv_10_1 = BatchNormalization()(GN_conv_10_1)
+    GN_conv_10_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(GN_conv_10_1)
+    GN_res_b10 = merge([GN_res_b9, GN_conv_10_2], mode='sum')
+    GN_res_b10 = ELU()(GN_res_b10)
+    GN_res_b10 = BatchNormalization()(GN_res_b10)
 
     # Output
-    outputs = Conv2D(3, (1, 1), padding='same', activation='sigmoid', kernel_regularizer=l2(weight_decay))(res_b10)
-    outputs = Lambda(lambda x: x * 255)(outputs)
-    GN = Model(outputs=outputs, inputs=inputs)         
+    GN_outputs = Conv2D(3, (1, 1), padding='same', activation='sigmoid', kernel_regularizer=l2(weight_decay))(GN_res_b10)
+    GN_outputs = Lambda(lambda x: x * 255)(GN_outputs)
+    GN = Model(outputs=GN_outputs, inputs=GN_inputs)         
 
     return GN  
 
 # 02-Discriminator network definition
 def Discriminator_Net():
     # Input
-    inputs = Input(shape=(img_w, img_h, channels))
-    conv_0 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(inputs)
-    conv_0 = LeakyReLU(alpha=0.3)(conv_0)
-    conv_0 = BatchNormalization()(conv_0)
+    DN_inputs = Input(shape=(img_w, img_h, channels))
+    DN_conv_0 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_inputs)
+    DN_conv_0 = ELU()(DN_conv_0)
+    DN_conv_0 = BatchNormalization()(DN_conv_0)
     
     # Resnet block1
-    conv_1_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_0)
-    conv_1_1 = LeakyReLU(alpha=0.3)(conv_1_1)
-    conv_1_1 = BatchNormalization()(conv_1_1)
-    conv_1_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_1_1)
-    res_b1 = merge([conv_0, conv_1_2], mode='sum')
-    res_b1 = LeakyReLU(alpha=0.3)(res_b1)
-    res_b1 = BatchNormalization()(res_b1)
+    DN_conv_1_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_conv_0)
+    DN_conv_1_1 = ELU()(DN_conv_1_1)
+    DN_conv_1_1 = BatchNormalization()(DN_conv_1_1)
+    DN_conv_1_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_conv_1_1)
+    DN_res_b1 = merge([DN_conv_0, DN_conv_1_2], mode='sum')
+    DN_res_b1 = ELU()(DN_res_b1)
+    DN_res_b1 = BatchNormalization()(DN_res_b1)
 
     # Resnet block2
-    conv_2_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b1)
-    conv_2_1 = LeakyReLU(alpha=0.3)(conv_2_1)
-    conv_2_1 = BatchNormalization()(conv_2_1)
-    conv_2_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_2_1)
-    res_b2 = merge([res_b1, conv_2_2], mode='sum')
-    res_b2 = LeakyReLU(alpha=0.3)(res_b2)
-    res_b2 = BatchNormalization()(res_b2)
+    DN_conv_2_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_res_b1)
+    DN_conv_2_1 = ELU()(DN_conv_2_1)
+    DN_conv_2_1 = BatchNormalization()(DN_conv_2_1)
+    DN_conv_2_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_conv_2_1)
+    DN_res_b2 = merge([DN_res_b1, DN_conv_2_2], mode='sum')
+    DN_res_b2 = ELU()(DN_res_b2)
+    DN_res_b2 = BatchNormalization()(DN_res_b2)
 
     # Resnet block3
-    conv_3_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b2)
-    conv_3_1 = LeakyReLU(alpha=0.3)(conv_3_1)
-    conv_3_1 = BatchNormalization()(conv_3_1)
-    conv_3_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_3_1)
-    res_b3 = merge([res_b2, conv_3_2], mode='sum')
-    res_b3 = LeakyReLU(alpha=0.3)(res_b3)
-    res_b3 = BatchNormalization()(res_b3)
+    DN_conv_3_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_res_b2)
+    DN_conv_3_1 = ELU()(DN_conv_3_1)
+    DN_conv_3_1 = BatchNormalization()(DN_conv_3_1)
+    DN_conv_3_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_conv_3_1)
+    DN_res_b3 = merge([DN_res_b2, DN_conv_3_2], mode='sum')
+    DN_res_b3 = ELU()(DN_res_b3)
+    DN_res_b3 = BatchNormalization()(DN_res_b3)
 
     # Resnet block4
-    conv_4_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b3)
-    conv_4_1 = LeakyReLU(alpha=0.3)(conv_4_1)
-    conv_4_1 = BatchNormalization()(conv_4_1)
-    conv_4_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_4_1)
-    res_b4 = merge([res_b3, conv_4_2], mode='sum')
-    res_b4 = LeakyReLU(alpha=0.3)(res_b4)
-    res_b4 = BatchNormalization()(res_b4)
+    DN_conv_4_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_res_b3)
+    DN_conv_4_1 = ELU()(DN_conv_4_1)
+    DN_conv_4_1 = BatchNormalization()(DN_conv_4_1)
+    DN_conv_4_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(DN_conv_4_1)
+    DN_res_b4 = merge([DN_res_b3, DN_conv_4_2], mode='sum')
+    DN_res_b4 = ELU()(DN_res_b4)
+    DN_res_b4 = BatchNormalization()(DN_res_b4)
     
-    # Resnet block5
-    conv_5_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b4)
-    conv_5_1 = LeakyReLU(alpha=0.3)(conv_5_1)
-    conv_5_1 = BatchNormalization()(conv_5_1)
-    conv_5_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_5_1)
-    res_b5 = merge([res_b4, conv_5_2], mode='sum')
-    res_b5 = LeakyReLU(alpha=0.3)(res_b5)
-    res_b5 = BatchNormalization()(res_b5)
-    
-    # Resnet block6
-    conv_6_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b5)
-    conv_6_1 = LeakyReLU(alpha=0.3)(conv_6_1)
-    conv_6_1 = BatchNormalization()(conv_6_1)
-    conv_6_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_6_1)
-    res_b6 = merge([res_b5, conv_6_2], mode='sum')
-    res_b6 = LeakyReLU(alpha=0.3)(res_b6)
-    res_b6 = BatchNormalization()(res_b6)
-
-    # Resnet block7
-    conv_7_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b6)
-    conv_7_1 = LeakyReLU(alpha=0.3)(conv_7_1)
-    conv_7_1 = BatchNormalization()(conv_7_1)
-    conv_7_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_7_1)
-    res_b7 = merge([res_b6, conv_7_2], mode='sum')
-    res_b7 = LeakyReLU(alpha=0.3)(res_b7)
-    res_b7 = BatchNormalization()(res_b7)
-
-    # Resnet block8
-    conv_8_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b7)
-    conv_8_1 = LeakyReLU(alpha=0.3)(conv_8_1)
-    conv_8_1 = BatchNormalization()(conv_8_1)
-    conv_8_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_8_1)
-    res_b8 = merge([res_b7, conv_8_2], mode='sum')
-    res_b8 = LeakyReLU(alpha=0.3)(res_b8)
-    res_b8 = BatchNormalization()(res_b8)
-
-    # Resnet block9
-    conv_9_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b8)
-    conv_9_1 = LeakyReLU(alpha=0.3)(conv_9_1)
-    conv_9_1 = BatchNormalization()(conv_9_1)
-    conv_9_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_9_1)
-    res_b9 = merge([res_b8, conv_9_2], mode='sum')
-    res_b9 = LeakyReLU(alpha=0.3)(res_b9)
-    res_b9 = BatchNormalization()(res_b9)
-
-    # Resnet block10
-    conv_10_1 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(res_b9)
-    conv_10_1 = LeakyReLU(alpha=0.3)(conv_10_1)
-    conv_10_1 = BatchNormalization()(conv_10_1)
-    conv_10_2 = Conv2D(64, (7, 7), padding='same', kernel_regularizer=l2(weight_decay))(conv_10_1)
-    res_b10 = merge([res_b9, conv_10_2], mode='sum')
-    res_b10 = LeakyReLU(alpha=0.3)(res_b10)
-    res_b10 = BatchNormalization()(res_b10)
-
     # Output
-    outputs = Conv2D(3, (1, 1), padding='same', activation='sigmoid', kernel_regularizer=l2(weight_decay))(res_b4)
-    outputs = Lambda(lambda x: x * 255)(outputs)
-    DN = Model(outputs=outputs, inputs=inputs) 
+    DN_outputs = Conv2D(3, (1, 1), padding='same', activation='sigmoid', kernel_regularizer=l2(weight_decay))(DN_res_b4)
+    DN_outputs = Lambda(lambda x: x * 255)(DN_outputs)
+    DN = Model(outputs=DN_outputs, inputs=DN_inputs) 
 
     return DN
 
@@ -369,4 +315,5 @@ for e in range(nb_epoch):
     # Save the first refined image as internal result every epoch
     refined = GN.predict(test.reshape(1,img_w,img_h,channels)).reshape(img_w,img_h,channels)[:,:,np.array([2,1,0])]
     refined = Image.fromarray(refined.astype(np.uint8))
-    imsave(('/home/zhaojian/Keras/GAN_APPLE/internal_results/BE_GAN/'+'lr_'+str(lr)+'epoch_'+str(e)+'_'+'36216_00510.png'), refined)
+    imsave(('/home/zhaojian/Keras/GAN_APPLE/internal_results/BE_GAN/'+'lr_'+str(lr)+'epoch_'+str(e)+'_'+'28798_00390.png'), refined)
+
