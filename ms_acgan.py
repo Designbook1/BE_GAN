@@ -127,12 +127,12 @@ def build_discriminator():
 if __name__ == '__main__':
 
     # batch and latent size taken from the paper
-    nb_epochs = 500
+    nb_epochs = 800
     batch_size = 2
     latent_size = 100
 
     # Adam parameters suggested in https://arxiv.org/abs/1511.06434
-    adam_lr = 0.00001
+    adam_lr = 0.00002
     adam_beta_1 = 0.5
 
     # build the discriminator
@@ -196,13 +196,9 @@ if __name__ == '__main__':
     X_test = X_test.squeeze().transpose(0, 3, 1, 2)
 
     X_train = (X_train.astype(np.float32) - 127.5) / 127.5
-    X_train = np.expand_dims(X_train, axis=1)
 
     X_test = (X_test.astype(np.float32) - 127.5) / 127.5
-    X_test = np.expand_dims(X_test, axis=1)
 
-    X_train = X_train.squeeze()
-    X_test = X_test.squeeze()
     nb_train, nb_test = X_train.shape[0], X_test.shape[0]
 
     train_history = defaultdict(list)
